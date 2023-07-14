@@ -4,6 +4,16 @@ import numpy as np
 from PIL import Image
 from utils.classes import class_mapping
 
+class transform_Compose(object):
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, img, targ):
+        for t in self.transforms:
+            img = t(img)
+            targ = t(targ)
+        return img, targ
+
 # Defining Custom Dataset
 class CityDataset(Dataset):
     def __init__(self, images_paths, transform_img=None, transform_mask=None):

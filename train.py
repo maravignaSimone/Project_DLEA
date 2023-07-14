@@ -6,6 +6,7 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
+from dataset.CityDataset import transform_Compose
 from utils.hyper_param import parse_args
 from utils.checkpoints import save_checkpoint, load_checkpoint
 from model.UNet import UNet
@@ -18,15 +19,15 @@ print(device)
 args = parse_args()
 
 # Defining transform
-inputTransform = transforms.Compose([
+inputTransform = transform_Compose([
         transforms.ToTensor(),
-        transforms.Normalize([.485, .456, .406], [.229, .224, .225])
+        # transforms.Normalize([.485, .456, .406], [.229, .224, .225])
     ])
 
 # Training dataset
-train_ds = torchvision.datasets.Cityscapes(args.ds_path, split='train', mode='fine', target_type='semantic', transform=inputTransform)
+train_ds = torchvision.datasets.Cityscapes(args.ds_path, split='train', mode='fine', target_type='semantic', transforms=inputTransform)
 # Validation dataset
-val_ds = torchvision.datasets.Cityscapes(args.ds_path, split='val', mode='fine', target_type='semantic', transform=inputTransform)
+val_ds = torchvision.datasets.Cityscapes(args.ds_path, split='val', mode='fine', target_type='semantic', transforms=inputTransform)
 
 # Dataloaders
 train_dl = DataLoader(train_ds, batch_size=args.batch_size)

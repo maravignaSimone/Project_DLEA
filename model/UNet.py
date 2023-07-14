@@ -32,7 +32,7 @@ class UNet(nn.Module):
         self.up_4 = nn.ConvTranspose2d(in_channels=128, out_channels=64, kernel_size=2, stride=2)
         self.up_conv_4 = conv_layer(128, 64)
         
-        self.output = nn.Conv2d(in_channels=64, out_channels=30, kernel_size=1, padding=0) # changed out_channels
+        self.output = nn.Conv2d(in_channels=64, out_channels=19, kernel_size=1, padding=0) # changed out_channels
         self.output_activation = nn.Sigmoid()
                 
     def forward(self, img):
