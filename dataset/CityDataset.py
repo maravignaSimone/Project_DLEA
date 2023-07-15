@@ -1,57 +1,55 @@
 import torch
 from torch.utils.data import Dataset
+import torchvision.transforms as transforms
 import numpy as np
 from PIL import Image
-from utils.classes import class_mapping
-
-class transform_Compose(object):
-    def __init__(self, transforms):
-        self.transforms = transforms
-
-    def __call__(self, img, targ):
-        for t in self.transforms:
-            img = t(img)
-            targ = t(targ)
-        return img, targ
+import os
 
 # Defining Custom Dataset
+# Supposing following valid values for the dataset (as in Kaggle and semantic as requested)
+# split valid values: train, test, val
+# mode valid value: fine
+# target_type valid value: semantic
 class CityDataset(Dataset):
-    def __init__(self, images_paths, transform_img=None, transform_mask=None):
-        self.images_paths = images_paths
-        self.transform_img = transform_img
-        self.transform_mask = transform_mask
-        self.mapping = class_mapping
+    def __init__(self, root, split = "train", mode = "fine", target_type = "semantic", transform = None):
+        self.root = root
+        self.split = split
+        self.mode = "gtFine" if mode == "fine" else "gtCoarse" # however I did not provide any support for gtCoarse data loading
+        self.images_dir = os.path.join(self.root, "leftImg8bit", self.split)
+        self.targets_dir = os.path.join(self.root, self.mode, self.split)
+        self.target_type = target_type
+        self.images = []
+        self.targets = []
+        self.transform = transform
+
+        for city in os.listdir(self.images_dir):
+            img_dir = os.path.join(self.images_dir, city)
+            target_dir = os.path.join(self.targets_dir, city)
+
+            for file_name in os.listdir(img_dir):
+                target_name = "{}_{}".format(
+                    file_name.split("_leftImg8bit")[0], f"{self.mode}_labelTrainIds.png" # This new label wrt to labelIds are with the correct mapping after executing a script from the original documentation of the dataset
+                )
+
+                self.images.append(os.path.join(img_dir, file_name))
+                self.targets.append(os.path.join(target_dir, target_name))
+
 
     def __len__(self):
-        return len(self.images_paths)
-    
-    def mask_to_class(self, mask):
-        mask = torch.from_numpy(np.array(mask))
-
-        class_mask = mask
-        h, w = class_mask.shape[1], class_mask.shape[2]
-
-        mask_out = torch.empty(h, w, dtype=torch.long)
-
-        for k in self.mapping:
-            idx = (class_mask == torch.tensor(k, dtype=torch.uint8).unsqueeze(1).unsqueeze(2))         
-            validx = (idx.sum(0) == 3)          
-            mask_out[validx] = torch.tensor(self.mapping[k], dtype=torch.long)
-       
-        return mask_out
+        return len(self.images)
 
     def __getitem__(self, index):
-        img = Image.open(self.images_paths[index])
-        image = img.crop((0, 0, 256, 256))
-        mask = img.crop((256, 0, 512, 256))
+        image = Image.open(self.images[index]).convert("RGB")
+        target = Image.open(self.targets[index])
 
-        if self.transform_img:
-            image = self.transform_img(image)
-            
-        if self.transform_mask:
-            mask = self.transform_mask(mask)
+        if self.transform is not None:
+            image = self.transform(image)
+            target = self.transform(target)
 
-        #mask = self.mask_to_class(mask)
-        #mask = mask.long()
+        image = transforms.ToTensor()(image)
+        target = np.array(target)
+        target = torch.from_numpy(target)
+        
+        target = target.type(torch.LongTensor)
 
-        return image, mask
+        return image, target
