@@ -14,6 +14,9 @@ def parse_args():
     # checkpoints
     parser.add_argument('--resume', type=str, default=None,
                         help='put the path to resuming file if needed')
-    parser.add_argument('--save-folder', default='./weights',
+    parser.add_argument('--save-weights', default='./weights',
                         help='Directory for saving checkpoint models (default: ./weights)')
+    # eval
+    parser.add_argument('--outputs', type=str, default='./output_data',
+                        help='put the path to save output (default: ./output_data)')
     return parser.parse_args()

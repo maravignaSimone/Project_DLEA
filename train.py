@@ -83,7 +83,7 @@ for epoch in range(args.epochs):
 
     # save checkpoint every 5 epochs
     if epoch % 5 == 0:
-        save_checkpoint(model, args.save_folder, epoch)
+        save_checkpoint(model, args.save_weights, epoch)
     train_loss.append(trainloss/len(train_dl))
 
     model.eval()
