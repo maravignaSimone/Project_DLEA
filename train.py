@@ -68,11 +68,8 @@ for epoch in range(args.epochs):
         # zero the parameter gradients
         optimizer.zero_grad()
 
-        print(labels.shape)
-
         # forward + backward + optimize
         outputs = model(inputs)
-        print(outputs.shape)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
