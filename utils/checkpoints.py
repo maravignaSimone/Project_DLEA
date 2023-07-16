@@ -5,6 +5,7 @@ import time
 def save_checkpoint(model, folder, epoch=0):
     if not os.path.exists(folder):
         os.makedirs(folder)
+    print("Saving checkpoints")
     filename = "cp_" + time.strftime("%Y%m%d-%H%M%S") + "_e" + str(epoch) + ".pth"
     save_path = os.path.join(folder, filename)
     torch.save(model.state_dict(), save_path)
