@@ -8,7 +8,10 @@ from torchmetrics.classification import MulticlassJaccardIndex
 from dataset.CityDataset import CityDataset
 from utils.hyper_param import parse_args
 from utils.checkpoints import load_checkpoint
+from utils.citys_labels import *
+from utils.save_images import save_images
 from model.UNet import UNet
+
 import os
 import time
 
@@ -49,13 +52,16 @@ out_folder = args.output_folder + '/' + time.strftime("%Y%m%d-%H%M")
 if not os.path.exists(out_folder):
     os.makedirs(out_folder)
 
+id2label = trainId2label
+mapping = {id2label[k].trainId: id2label[k].color for k in id2label}
+
 totaccuracy = 0
 
 model.eval()
 with torch.no_grad():
     for i, data in enumerate(val_dl, 0):
-        inputs, labels = data
-        inputs, labels = inputs.to(device), labels.to(device)
+        inputs, labels, rgbmask = data
+        inputs, labels, rgbmask = inputs.to(device), labels.to(device), rgbmask.to(device)
 
         outputs = model(inputs)
 
@@ -64,12 +70,10 @@ with torch.no_grad():
         
         pred_labels = torch.argmax(outputs, dim=1)
 
-        filename = "mask_" + str(i) + ".png"
-        pred_labels = transforms.ToPILImage()(pred_labels.byte())
-        pred_labels.save(os.path.join(out_folder, filename))
+        save_images(inputs, pred_labels, rgbmask, mapping, out_folder)
 
         if i % 100 == 99:
-                print("[it: {}] accuracy: {}".format(i+1, totaccuracy / i))
+                print("[it: {}] accuracy: {}".format(i+1, totaccuracy / (i+1)))
 
 print("Evaluation accuracy: {} ".format(totaccuracy/len(val_dl)))
 

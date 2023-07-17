@@ -20,6 +20,7 @@ class CityDataset(Dataset):
         self.target_type = target_type
         self.images = []
         self.targets = []
+        self.rgb_targets = []
         self.transform = transform
 
         for city in os.listdir(self.images_dir):
@@ -30,9 +31,13 @@ class CityDataset(Dataset):
                 target_name = "{}_{}".format(
                     file_name.split("_leftImg8bit")[0], f"{self.mode}_labelTrainIds.png" # This new label wrt to labelIds are with the correct mapping after executing a script from the original documentation of the dataset
                 )
+                rgb_target_name = "{}_{}".format(
+                    file_name.split("_leftImg8bit")[0], f"{self.mode}_color.png" # This new label wrt to labelIds are with the correct mapping after executing a script from the original documentation of the dataset
+                )
 
                 self.images.append(os.path.join(img_dir, file_name))
                 self.targets.append(os.path.join(target_dir, target_name))
+                self.rgb_targets.append(os.path.join(target_dir, rgb_target_name))
 
 
     def __len__(self):
@@ -41,15 +46,17 @@ class CityDataset(Dataset):
     def __getitem__(self, index):
         image = Image.open(self.images[index]).convert("RGB")
         target = Image.open(self.targets[index])
+        rgb_target = Image.open(self.rgb_targets[index]).convert("RGB")
 
         if self.transform is not None:
             image = self.transform(image)
             target = self.transform(target)
+            rgb_target = self.transform(rgb_target)
 
         image = transforms.ToTensor()(image)
         target = np.array(target)
         target = torch.from_numpy(target)
-        
         target = target.type(torch.LongTensor)
+        rgb_target = transforms.ToTensor()(rgb_target)
 
-        return image, target
+        return image, target, rgb_target

@@ -82,7 +82,7 @@ for epoch in range(args.epochs):
         trainloss += loss.item()
 
         if i % 200 == 199:
-            print("[it: {}] loss: {}".format(i+1, trainloss / i))
+            print("[it: {}] loss: {}".format(i+1, trainloss / (i+1)))
             # uncomment for faster debug
             # break
 
@@ -110,7 +110,7 @@ for epoch in range(args.epochs):
             totaccuracy += metric.item()
 
             if i % 100 == 99:
-                print("[it: {}] loss: {} accuracy: {}".format(i+1, valloss / i, totaccuracy / i))
+                print("[it: {}] loss: {} accuracy: {}".format(i+1, valloss / (i+1), totaccuracy / (i+1)))
 
         val_loss.append(valloss/len(val_dl))
         val_acc.append(totaccuracy/len(val_dl))

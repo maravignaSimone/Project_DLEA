@@ -12,5 +12,5 @@ def save_checkpoint(model, folder, epoch=0):
 
 def load_checkpoint(model, args):
     if os.path.isfile(args.resume):
-        print("Resuming training from {}".format(args.resume))
+        print("Resuming from {}".format(args.resume))
         model.load_state_dict(torch.load(args.resume))
