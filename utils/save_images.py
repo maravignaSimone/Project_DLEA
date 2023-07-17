@@ -3,7 +3,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 import os
 
-def save_images(inputs, pred_labels, rgbmask, mapping, out_folder):
+def save_images(inputs, pred_labels, rgbmask, mapping, out_folder, i):
     # squeeze output in order to remove batch_size (in eval bs = 1 so squeeze is enough)
     pred = torch.squeeze(pred_labels)
     colored_pred = torch.zeros(3, pred.size(0), pred.size(1), dtype=torch.uint8)

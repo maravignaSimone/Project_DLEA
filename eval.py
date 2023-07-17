@@ -70,7 +70,7 @@ with torch.no_grad():
         
         pred_labels = torch.argmax(outputs, dim=1)
 
-        save_images(inputs, pred_labels, rgbmask, mapping, out_folder)
+        save_images(inputs, pred_labels, rgbmask, mapping, out_folder, i)
 
         if i % 100 == 99:
                 print("[it: {}] accuracy: {}".format(i+1, totaccuracy / (i+1)))
