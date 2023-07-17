@@ -6,11 +6,15 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchmetrics.classification import MulticlassJaccardIndex
+from torch.utils.tensorboard import SummaryWriter
 
 from dataset.CityDataset import CityDataset
 from utils.hyper_param import parse_args
 from utils.checkpoints import save_checkpoint, load_checkpoint
 from model.UNet import UNet
+
+import os
+import time
 
 # Setting GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -47,6 +51,13 @@ optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
 IoU = MulticlassJaccardIndex(num_classes=19, ignore_index=255).to(device)
 
+runs_folder = args.runs_folder + '/' + time.strftime("%Y%m%d-%H%M")
+
+if not os.path.exists(runs_folder):
+    os.makedirs(runs_folder)
+
+writer = SummaryWriter(runs_folder)
+
 print('=======> Start training')
 print('Parameters: epochs= {}, bs= {}, lr= {}'.format(args.epochs, args.batch_size, args.lr))
 
@@ -67,7 +78,7 @@ for epoch in range(args.epochs):
     model.train()
 
     for i, data in enumerate(train_dl, 0):
-        inputs, labels = data
+        inputs, labels, _ = data
         inputs, labels = inputs.to(device), labels.to(device)
 
         # zero the parameter gradients
@@ -80,6 +91,8 @@ for epoch in range(args.epochs):
         optimizer.step()
 
         trainloss += loss.item()
+
+        writer.add_scalar('Loss/train', trainloss / (i+1), epoch * len(train_dl) + i)
 
         if i % 200 == 199:
             print("[it: {}] loss: {}".format(i+1, trainloss / (i+1)))
@@ -98,7 +111,7 @@ for epoch in range(args.epochs):
     model.eval()
     with torch.no_grad():
         for i, data in enumerate(val_dl, 0):
-            inputs, labels = data
+            inputs, labels, _ = data
             inputs, labels = inputs.to(device), labels.to(device)
 
             outputs = model(inputs)
@@ -109,6 +122,9 @@ for epoch in range(args.epochs):
             metric = IoU(outputs, labels)
             totaccuracy += metric.item()
 
+            writer.add_scalar('Loss/val', valloss / (i+1), epoch * len(val_dl) + i)
+            writer.add_scalar('Accuracy', totaccuracy / (i+1), epoch * len(val_dl) + i)
+
             if i % 100 == 99:
                 print("[it: {}] loss: {} accuracy: {}".format(i+1, valloss / (i+1), totaccuracy / (i+1)))
 
@@ -116,3 +132,6 @@ for epoch in range(args.epochs):
         val_acc.append(totaccuracy/len(val_dl))
 
     print("Epoch : {} , train loss : {} , valid loss : {} , accuracy: {} ".format(epoch, train_loss[-1], val_loss[-1], val_acc[-1]))
+
+writer.close()
+print("Finished training")

@@ -45,12 +45,12 @@ else:
     print("Put some weights for evaluation using --resume")
     exit()
 
-print('=======> Start evaluation')
-
 out_folder = args.output_folder + '/' + time.strftime("%Y%m%d-%H%M")
 
 if not os.path.exists(out_folder):
     os.makedirs(out_folder)
+
+print('=======> Start evaluation')
 
 id2label = trainId2label
 mapping = {id2label[k].trainId: id2label[k].color for k in id2label}
