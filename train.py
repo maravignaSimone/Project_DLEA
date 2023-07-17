@@ -110,7 +110,7 @@ for epoch in range(args.epochs):
             totaccuracy += metric.item()
 
             if i % 100 == 99:
-                print("[it: {}] loss: {} accuracy: {}".format(i+1, trainloss / i, totaccuracy / i))
+                print("[it: {}] loss: {} accuracy: {}".format(i+1, valloss / i, totaccuracy / i))
 
         val_loss.append(valloss/len(val_dl))
         val_acc.append(totaccuracy/len(val_dl))
