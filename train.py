@@ -84,7 +84,7 @@ for epoch in range(args.epochs):
         if i % 200 == 199:
             print("[it: {}] loss: {}".format(i+1, trainloss / i))
             # uncomment for faster debug
-            break
+            # break
 
     print("Epoch : {} finished train, starting eval".format(epoch))
     # save checkpoint every 5 epochs
