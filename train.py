@@ -66,6 +66,7 @@ if args.resume:
 
 # losses
 train_loss = []
+train_acc = []
 val_loss = []
 val_acc = []
 
@@ -74,6 +75,8 @@ for epoch in range(args.epochs):
     # losses for each batch
     trainloss = 0
     valloss = 0
+    trainaccuracy = 0
+    valaccuracy = 0
 
     model.train()
 
@@ -92,10 +95,14 @@ for epoch in range(args.epochs):
 
         trainloss += loss.item()
 
+        metric = IoU(outputs, labels)
+        trainaccuracy += metric.item()
+
         writer.add_scalar('Loss/train', trainloss / (i+1), epoch * len(train_dl) + i)
+        writer.add_scalar('Accuracy/train', trainaccuracy / (i+1), epoch * len(train_dl) + i)
 
         if i % 200 == 199:
-            print("[it: {}] loss: {}".format(i+1, trainloss / (i+1)))
+            print("[it: {}] loss: {} accuracy: {}".format(i+1, trainloss / (i+1), trainaccuracy / (i+1)))
             # uncomment for faster debug
             # break
 
@@ -104,10 +111,9 @@ for epoch in range(args.epochs):
     if epoch % 5 == 0 or epoch == args.epochs - 1:
         save_checkpoint(model, args.save_weights, epoch)
     train_loss.append(trainloss/len(train_dl))
+    train_acc.append(trainaccuracy/len(val_dl))
 
     # eval but without saving images (eval with saving images is on the file eval.py)
-    totaccuracy = 0
-
     model.eval()
     with torch.no_grad():
         for i, data in enumerate(val_dl, 0):
@@ -120,18 +126,18 @@ for epoch in range(args.epochs):
             valloss += loss.item()
 
             metric = IoU(outputs, labels)
-            totaccuracy += metric.item()
+            valaccuracy += metric.item()
 
             writer.add_scalar('Loss/val', valloss / (i+1), epoch * len(val_dl) + i)
-            writer.add_scalar('Accuracy', totaccuracy / (i+1), epoch * len(val_dl) + i)
+            writer.add_scalar('Accuracy/val', valaccuracy / (i+1), epoch * len(val_dl) + i)
 
             if i % 100 == 99:
-                print("[it: {}] loss: {} accuracy: {}".format(i+1, valloss / (i+1), totaccuracy / (i+1)))
+                print("[it: {}] loss: {} accuracy: {}".format(i+1, valloss / (i+1), valaccuracy / (i+1)))
 
         val_loss.append(valloss/len(val_dl))
-        val_acc.append(totaccuracy/len(val_dl))
+        val_acc.append(valaccuracy/len(val_dl))
 
-    print("Epoch : {} , train loss : {} , valid loss : {} , accuracy: {} ".format(epoch, train_loss[-1], val_loss[-1], val_acc[-1]))
+    print("Epoch : {} , train loss : {} , valid loss : {} , train accuracy: {} , val accuracy ".format(epoch, train_loss[-1], val_loss[-1], train_acc[-1], val_acc[-1]))
 
 writer.close()
 print("Finished training")
