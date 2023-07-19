@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 
+# define all the parser to execute with custom parameters and custom paths (useful to test both in local and hpc)
 def parse_args():
     parser = ArgumentParser()
     # training hyper parameters

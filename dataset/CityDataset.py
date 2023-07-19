@@ -25,6 +25,7 @@ class CityDataset(Dataset):
         self.rgb_targets = []
         self.transform = transform
 
+        # go through all the directories of the dataset (1 directory for every city)
         for city in os.listdir(self.images_dir):
             img_dir = os.path.join(self.images_dir, city)
             target_dir = os.path.join(self.targets_dir, city)
@@ -34,7 +35,7 @@ class CityDataset(Dataset):
                     file_name.split("_leftImg8bit")[0], f"{self.mode}_labelTrainIds.png" # This new label wrt to labelIds are with the correct mapping after executing a script from the original documentation of the dataset
                 )
                 rgb_target_name = "{}_{}".format(
-                    file_name.split("_leftImg8bit")[0], f"{self.mode}_color.png" # This new label wrt to labelIds are with the correct mapping after executing a script from the original documentation of the dataset
+                    file_name.split("_leftImg8bit")[0], f"{self.mode}_color.png" # This label is the colored ground truth (useful just for displaying purposes in eval.py)
                 )
 
                 self.images.append(os.path.join(img_dir, file_name))
@@ -58,7 +59,7 @@ class CityDataset(Dataset):
         image = transforms.ToTensor()(image)
         target = np.array(target)
         target = torch.from_numpy(target)
-        target = target.type(torch.LongTensor)
+        target = target.type(torch.LongTensor) # target dimension [B, H, W] with values between [0, n_classes] of type longInt
         rgb_target = transforms.ToTensor()(rgb_target)
 
         return image, target, rgb_target

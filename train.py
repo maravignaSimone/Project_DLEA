@@ -90,7 +90,7 @@ for epoch in range(args.epochs):
         optimizer.zero_grad()
 
         # forward + backward + optimize
-        outputs = model(inputs)
+        outputs = model(inputs) # outputs [B, N_Classes, H, W]
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()

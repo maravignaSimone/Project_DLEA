@@ -68,10 +68,10 @@ with torch.no_grad():
 
         outputs = model(inputs)
 
-        metric = IoU(outputs, labels)
+        metric = IoU(outputs, labels) # outputs [B, N_Classes, H, W]
         totaccuracy += metric.item()
         
-        pred_labels = torch.argmax(outputs, dim=1)
+        pred_labels = torch.argmax(outputs, dim=1) #
 
         # Function to save images into a folder
         save_images(inputs, pred_labels, rgbmask, mapping, out_folder, i)

@@ -2,6 +2,7 @@ import torch
 import os
 import time
 
+# functions to save and load the model with a custom name got by actual time and number of current epoch
 def save_checkpoint(model, folder, epoch=0):
     if not os.path.exists(folder):
         os.makedirs(folder)
