@@ -6,7 +6,9 @@ from PIL import Image
 import os
 
 # Defining Custom Dataset
-# Supposing following valid values for the dataset (as in Kaggle and semantic as requested)
+# created similar to the source https://pytorch.org/vision/main/_modules/torchvision/datasets/cityscapes.html#Cityscapes
+# but with some changes.
+# Supposing following valid values for the dataset (as in Kaggle and target type 'semantic' as requested)
 # split valid values: train, test, val
 # mode valid value: fine
 # target_type valid value: semantic
