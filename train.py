@@ -44,7 +44,6 @@ val_dl = DataLoader(val_ds, batch_size=1)
 model = UNet().to(device)
 
 # Choose the loss function and optimizer
-# criterion = nn.L1Loss()
 criterion = nn.CrossEntropyLoss(ignore_index=255)
 optimizer = optim.Adam(model.parameters(), lr=args.lr)
 

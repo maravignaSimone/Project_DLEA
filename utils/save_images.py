@@ -6,10 +6,13 @@ import os
 def save_images(inputs, pred_labels, rgbmask, mapping, out_folder, i):
     # squeeze output in order to remove batch_size (in eval bs = 1 so squeeze is enough)
     pred = torch.squeeze(pred_labels)
+    # create a new image of all zeros 3 channels
     colored_pred = torch.zeros(3, pred.size(0), pred.size(1), dtype=torch.uint8)
+    # fill the image with colors taken from mapping
     for k in mapping:
         colored_pred[:, pred==k] = torch.tensor(mapping[k]).byte().view(3, 1)
 
+    # concatenate image, generated mask and colored ground truth in a single image
     image = torch.squeeze(inputs)
     rgbmask = torch.squeeze(rgbmask)
     image = transforms.ToPILImage()(image)
