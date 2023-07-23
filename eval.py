@@ -26,7 +26,7 @@ WIDTH = 288
 
 # Defining transform
 inputTransform = transforms.Compose([
-        transforms.Resize((HEIGHT,WIDTH) , interpolation=transforms.InterpolationMode.NEAREST),
+        transforms.Resize((HEIGHT,WIDTH) , interpolation=transforms.InterpolationMode.NEAREST), #interpolation mode necessary because label pixels are coded into each class id
         # transforms.Normalize([.485, .456, .406], [.229, .224, .225])
     ])
 
@@ -39,12 +39,14 @@ model = UNet().to(device)
 
 IoU = MulticlassJaccardIndex(num_classes=19, ignore_index=255).to(device)
 
+# Loading checkpoints in order to evaluate those weights (mandatory)
 if args.resume:
     load_checkpoint(model, args)
 else:
     print("Put some weights for evaluation using --resume")
     exit()
 
+# Creating folder for output images
 out_folder = args.output_folder + '/' + time.strftime("%Y%m%d-%H%M")
 
 if not os.path.exists(out_folder):
@@ -52,6 +54,7 @@ if not os.path.exists(out_folder):
 
 print('=======> Start evaluation')
 
+# Creating a mapping between RGB colors (id2label[k].color) and class train Id (id2label[k].trainId) in order to color generated masks
 id2label = trainId2label
 mapping = {id2label[k].trainId: id2label[k].color for k in id2label}
 
@@ -65,11 +68,12 @@ with torch.no_grad():
 
         outputs = model(inputs)
 
-        metric = IoU(outputs, labels)
+        metric = IoU(outputs, labels) # outputs [B, N_Classes, H, W]
         totaccuracy += metric.item()
         
         pred_labels = torch.argmax(outputs, dim=1)
 
+        # Function to save images into a folder
         save_images(inputs, pred_labels, rgbmask, mapping, out_folder, i)
 
         if i % 100 == 99:

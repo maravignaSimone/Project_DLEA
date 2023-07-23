@@ -27,11 +27,11 @@ WIDTH = 288
 
 # Defining transform
 inputTransform = transforms.Compose([
-        transforms.Resize((HEIGHT,WIDTH) , interpolation=transforms.InterpolationMode.NEAREST),
+        transforms.Resize((HEIGHT,WIDTH) , interpolation=transforms.InterpolationMode.NEAREST), #interpolation mode necessary because label pixels are coded into each class id
         # transforms.Normalize([.485, .456, .406], [.229, .224, .225])
     ])
 
-# Training dataset
+# Training dataset (Dataset class is custom)
 train_ds = CityDataset(args.ds_path, split='train', mode='fine', target_type='semantic', transform=inputTransform)
 # Validation dataset
 val_ds = CityDataset(args.ds_path, split='val', mode='fine', target_type='semantic', transform=inputTransform)
@@ -44,13 +44,12 @@ val_dl = DataLoader(val_ds, batch_size=1)
 model = UNet().to(device)
 
 # Choose the loss function and optimizer
-# criterion = nn.MSELoss()
-# criterion = nn.L1Loss()
 criterion = nn.CrossEntropyLoss(ignore_index=255)
 optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
 IoU = MulticlassJaccardIndex(num_classes=19, ignore_index=255).to(device)
 
+# Creating Tensorboard folder
 runs_folder = args.runs_folder + '/' + time.strftime("%Y%m%d-%H%M")
 
 if not os.path.exists(runs_folder):
@@ -58,13 +57,15 @@ if not os.path.exists(runs_folder):
 
 writer = SummaryWriter(runs_folder)
 
+# Start training
 print('=======> Start training')
 print('Parameters: epochs= {}, bs= {}, lr= {}'.format(args.epochs, args.batch_size, args.lr))
 
+# Load checkpoint if requested
 if args.resume:
     load_checkpoint(model, args)
 
-# losses
+# losses and accuracy
 train_loss = []
 train_acc = []
 val_loss = []
@@ -72,7 +73,7 @@ val_acc = []
 
 # train loop
 for epoch in range(args.epochs):
-    # losses for each batch
+    # losses and accuracy for each epoch
     trainloss = 0
     valloss = 0
     trainaccuracy = 0
@@ -88,7 +89,7 @@ for epoch in range(args.epochs):
         optimizer.zero_grad()
 
         # forward + backward + optimize
-        outputs = model(inputs)
+        outputs = model(inputs) # outputs [B, N_Classes, H, W]
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -107,7 +108,7 @@ for epoch in range(args.epochs):
             # break
 
     print("Epoch : {} finished train, starting eval".format(epoch))
-    # save checkpoint every 5 epochs
+    # Save checkpoint every 5 epochs
     if epoch % 5 == 0 or epoch == args.epochs - 1:
         save_checkpoint(model, args.save_weights, epoch)
     train_loss.append(trainloss/len(train_dl))
