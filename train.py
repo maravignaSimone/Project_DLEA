@@ -112,7 +112,7 @@ for epoch in range(args.epochs):
     if epoch % 5 == 0 or epoch == args.epochs - 1:
         save_checkpoint(model, args.save_weights, epoch)
     train_loss.append(trainloss/len(train_dl))
-    train_acc.append(trainaccuracy/len(val_dl))
+    train_acc.append(trainaccuracy/len(train_dl))
 
     # eval but without saving images (eval with saving images is on the file eval.py)
     model.eval()
