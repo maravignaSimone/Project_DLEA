@@ -137,7 +137,7 @@ for epoch in range(args.epochs):
         val_loss.append(valloss/len(val_dl))
         val_acc.append(valaccuracy/len(val_dl))
 
-    print("Epoch : {} , train loss : {} , valid loss : {} , train accuracy: {} , val accuracy ".format(epoch, train_loss[-1], val_loss[-1], train_acc[-1], val_acc[-1]))
+    print("Epoch : {} , train loss : {} , valid loss : {} , train accuracy: {} , val accuracy: {} ".format(epoch, train_loss[-1], val_loss[-1], train_acc[-1], val_acc[-1]))
 
 writer.close()
 print("Finished training")
